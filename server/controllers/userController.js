@@ -60,9 +60,8 @@ const clerkWebhooks = async (req, res) => {
 //API controller function to get user avaible credits data
 const userCredits=async (req,res)=>{
     try {
-        const {clerkId}=req.body
 
-        const userData=await userModel.findOne({clerkId})
+        const userData=await userModel.findOne({ clerkId: req.clerkId })
 
         res.json({ success: true, credits:userData.creditBalance })
 

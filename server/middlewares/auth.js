@@ -24,7 +24,7 @@ export const authUser=async(req,res,next)=>{
         const clerkId = decoded.clerkId || decoded.sub;
         console.log("cler id",clerkId);
         
-        req.body.clerkId=clerkId
+        req.clerkId = clerkId; // Set on request object
         next()
     } catch (error) {
         console.log(error.message);
