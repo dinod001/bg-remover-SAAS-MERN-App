@@ -11,11 +11,20 @@ export const authUser=async(req,res,next)=>{
             res.json({ success: false, message: "Not Authorized login again" })
         }
 
+    
+        const decoded = jwt.decode(token); // Or jwt.verify(token, PUBLIC_KEY) if verifying
+
+        console.log("decoded",decoded);
         
-        const token_decode=jwt.decode(token)
-        req.body.clerkId=token_decode.clerkId
-        console.log(token_decode.clerkId);
+
+        if (!decoded) {
+        return res.status(401).json({ success: false, message: "Invalid token." });
+        }
+
+        const clerkId = decoded.clerkId || decoded.sub;
+        console.log("cler id",clerkId);
         
+        req.body.clerkId=clerkId
         next()
     } catch (error) {
         console.log(error.message);
