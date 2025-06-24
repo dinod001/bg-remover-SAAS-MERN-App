@@ -1,44 +1,43 @@
 import { useState } from "react";
 import { createContext } from "react";
-import {useAuth} from '@clerk/clerk-react'
-import axios from 'axios'
+import { useAuth } from "@clerk/clerk-react";
+import axios from "axios";
 import { toast } from "react-toastify";
 
-export const AppContext=createContext()
+export const AppContext = createContext();
 
-const AppContextProvider=(props)=>{
+export const AppContextProvider = ({ children }) => {
+  const [credit, setCredit] = useState(false);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const { getToken } = useAuth();
 
-    const [credit,setCredit]=useState(false)
+  const loadCreditData = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await axios.get(`${backendUrl}/api/user/credits`, {
+        headers: { token },
+      });
 
-    const backendUrl=import.meta.env.VITE_BACKEND_URL
-
-    const {getToken}=useAuth()
-    
-    const loadCreditData=async()=>{
-            try {
-                
-                const token=await getToken()
-                const {data}=await axios.get(backendUrl+'api/user/credits',{headers:{token}})
-                if(data.success){
-                    setCredit(data.credits)
-                }
-
-            } catch (error) {
-                console.log(error);
-                toast.error(error.message)
-            }
+      if (data.success) {
+        setCredit(data.credits);
+        console.log(data.credits);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.message);
     }
+  };
 
-    const value={
-        credit,setCredit,
-        backendUrl,loadCreditData
-    }
-
-    return(
-        <AppContext.Provider value={value}>
-            {props.children}
-        </AppContext.Provider>
-    )
-}
-
-export default AppContextProvider
+  return (
+    <AppContext.Provider
+      value={{
+        credit,
+        setCredit,
+        backendUrl,
+        loadCreditData,
+      }}
+    >
+      {children}
+    </AppContext.Provider>
+  );
+};
