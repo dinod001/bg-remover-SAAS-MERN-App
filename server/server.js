@@ -2,6 +2,7 @@ import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import connectDB from './config/mongoose.js'
+import userRouter from './router/userRouter.js'
 
 
 //App config
@@ -13,13 +14,12 @@ await connectDB()
 app.use(express.json())
 app.use(cors())
 
-
-
 //API routes
 app.get("/",(req,res)=>{
-    res.send("API is working")
-    
+    res.send("API is working") 
 })
+
+app.use("/api/user",userRouter)
 
 app.listen(PORT,()=>{
     console.log(`Server is running ${PORT}`);
