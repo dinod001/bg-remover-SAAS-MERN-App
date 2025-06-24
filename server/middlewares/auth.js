@@ -11,7 +11,6 @@ export const authUser=async(req,res,next)=>{
             res.json({ success: false, message: "Not Authorized login again" })
         }
 
-        console.log(token);
         
         const token_decode=jwt.decode(token)
         req.body.clerkId=token_decode.clerkId
