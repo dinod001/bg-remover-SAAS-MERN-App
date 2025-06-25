@@ -11,7 +11,7 @@ const removeBgImage = async (req, res) => {
 
         const { clerkId } = req.clerkId
 
-        const user = await userModel.findOne({ clerkId })
+        const user = await userModel.findById({ clerkId })
 
         if (!user) {
             return res.json({ success: false, message: 'User not found' })
