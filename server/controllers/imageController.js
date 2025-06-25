@@ -2,14 +2,18 @@ import axios from 'axios'
 import fs from 'fs'
 import FormData from 'form-data'
 import userModel from '../models/userModel.js'
+import { log } from 'console'
 
 
 
 //Controller function to remove bg from image
 const removeBgImage = async (req, res) => {
     try {
+
+        console.log();
         
-        const user = await userModel.findById(req.clerkId)
+        
+        const user = await userModel.findOne({ clerkId: req.clerkId });
 
         if (!user) {
             return res.json({ success: false, message: 'User not found' })
