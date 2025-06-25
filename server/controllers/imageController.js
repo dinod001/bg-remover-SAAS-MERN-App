@@ -8,13 +8,8 @@ import userModel from '../models/userModel.js'
 //Controller function to remove bg from image
 const removeBgImage = async (req, res) => {
     try {
-
-        const { clerkId } = req.clerkId
-
-        console.log(clerkId);
         
-
-        const user = await userModel.findById({ clerkId })
+        const user = await userModel.findById(req.clerkId)
 
         if (!user) {
             return res.json({ success: false, message: 'User not found' })
