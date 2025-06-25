@@ -86,7 +86,9 @@ export const AppContextProvider = ({ children }) => {
         loadCreditData,
         image,
         setImage,
-        removeBg
+        removeBg,
+        resultImage,
+        setResultImage
       }}
     >
       {children}
