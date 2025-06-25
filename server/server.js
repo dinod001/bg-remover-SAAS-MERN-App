@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import connectDB from './config/mongoose.js'
 import userRouter from './router/userRouter.js'
+import imageRouter from './router/imageRouter.js'
 
 
 //App config
@@ -20,6 +21,7 @@ app.get("/",(req,res)=>{
 })
 
 app.use("/api/user",userRouter)
+app.use('/api/image',imageRouter)
 
 app.listen(PORT,()=>{
     console.log(`Server is running ${PORT}`);
