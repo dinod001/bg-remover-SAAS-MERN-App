@@ -11,18 +11,13 @@ export const authUser=async(req,res,next)=>{
             res.json({ success: false, message: "Not Authorized login again" })
         }
 
-    
         const decoded = jwt.decode(token); // Or jwt.verify(token, PUBLIC_KEY) if verifying
-
-        console.log("decoded",decoded);
         
-
         if (!decoded) {
-        return res.status(401).json({ success: false, message: "Invalid token." });
+            return res.status(401).json({ success: false, message: "Invalid token." });
         }
 
         const clerkId = decoded.clerkId || decoded.sub;
-        console.log("cler id",clerkId);
         
         req.clerkId = clerkId; // Set on request object
         next()
