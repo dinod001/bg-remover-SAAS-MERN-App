@@ -88,7 +88,8 @@ export const AppContextProvider = ({ children }) => {
         setImage,
         removeBg,
         resultImage,
-        setResultImage
+        setResultImage,
+        getToken
       }}
     >
       {children}

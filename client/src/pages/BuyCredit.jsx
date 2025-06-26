@@ -1,7 +1,40 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { assets, plans } from '../assets/assets'
+import { AppContext } from '../context/AppContext';
+import { useUser } from '@clerk/clerk-react';
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const BuyCredit = () => {
+
+  const {backendUrl,getToken} = useContext(AppContext)
+  const { isSignedIn } = useUser()
+
+  const purchaseCredit = async (plan) => {
+    try {
+      if (!isSignedIn) {
+        return toast.warn("Login to buy credits");
+      }
+
+      const token = await getToken();
+
+      const { data } = await axios.post(
+        backendUrl + "/api/user/payment",
+        { planId: plan },
+        { headers: { token } }
+      );
+      if (data.success) {
+        const { session_url } = data;
+        window.location.replace(session_url);
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+
   return (
     <div className="min-h-[80vh] pt-14 mb-16 text-center px-4 bg-gradient-to-br from-white via-gray-50 to-gray-100">
       <button className="bg-gradient-to-r from-gray-700 to-gray-900 text-white px-8 py-2 rounded-full text-sm mb-6 shadow-md hover:shadow-lg transition">
@@ -28,7 +61,7 @@ const BuyCredit = () => {
               <span className="text-sm text-gray-500"> / {item.credits} credits</span>
             </div>
 
-            <button className="w-full bg-gray-900 text-white text-sm rounded-md py-2.5 mt-6 hover:bg-gray-800 transition">
+            <button onClick={()=>purchaseCredit(item.id)} className="w-full bg-gray-900 text-white text-sm rounded-md py-2.5 mt-6 hover:bg-gray-800 transition">
               Purchase
             </button>
           </div>
