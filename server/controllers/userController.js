@@ -158,8 +158,6 @@ const purchaseCredits = async (req, res) => {
                 },
             },
         });
-        console.log(session.metadata);
-
 
         res.json({ success: true, session_url: session.url });
     } catch (error) {
