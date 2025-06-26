@@ -140,8 +140,6 @@ const purchaseCredits = async (req, res) => {
                 quantity: 1,
             },
         ];
-
-        console.log(newTransaction._id.toString());
         
         const session = await stripeInstance.checkout.sessions.create({
             success_url: `${origin}/`,
@@ -149,7 +147,7 @@ const purchaseCredits = async (req, res) => {
             line_items: line_items,
             mode: "payment",
             metadata: {
-               transactionId: newTransaction._id.toString(),  // ✅ correct
+               transactionId: newTransaction._id.toString(), 
                clerkId: clerkId
                
             },
@@ -195,6 +193,7 @@ const stripeWebhooks = async (request, response) => {
       });
 
       const { transactionId,clerkId } = session.data[0].metadata;
+      
       
       const purchaseData = await transactionModel.findById(transactionId);
       const userData = await userModel.findById(clerkId);

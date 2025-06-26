@@ -22,7 +22,11 @@ app.get("/",(req,res)=>{
 
 app.use("/api/user",express.json(),userRouter)
 app.use('/api/image',express.json(),imageRouter)
-app.post("/stripe", express.raw({ type: "application/json" }), stripeWebhooks);
+app.post("/stripe", express.raw({ type: "application/json" }), (req,res)=>{
+    console.log("hit");
+    return res.send("hit")
+    
+});
 
 
 app.listen(PORT,()=>{
