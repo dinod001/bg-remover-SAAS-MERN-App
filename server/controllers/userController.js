@@ -151,15 +151,13 @@ const purchaseCredits = async (req, res) => {
             transactionId: newTransaction._id.toString(),
             clerkId: userData.clerkId,
         },
-        payment_intent_data: {            // <-- add metadata here too
+        payment_intent_data: {            
             metadata: {
             transactionId: newTransaction._id.toString(),
             clerkId: userData.clerkId,
             },
         },
         });
-
-
         console.log(session.metadata);
         
 
@@ -170,75 +168,115 @@ const purchaseCredits = async (req, res) => {
 };
 
 
-//payment
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const stripeWebhooks = async (request, response) => {
-    console.log("working");
-    
-  const sig = request.headers["stripe-signature"];
+  console.log("Webhook received");
 
+  const sig = request.headers["stripe-signature"];
   let event;
 
   try {
-    event = Stripe.webhooks.constructEvent(
+    // Use your instantiated stripe object to construct event
+    event = stripeInstance.webhooks.constructEvent(
       request.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
+    console.error("Webhook signature verification failed:", err.message);
     return response.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Handle the event
-  switch (event.type) {
-    case "payment_intent.succeeded": {
-        console.log("usccss");
-        
-      const paymentIntent = event.data.object;
-      const paymentIntentId = paymentIntent.id;
+  try {
+    switch (event.type) {
+      case "payment_intent.succeeded": {
+        console.log("Payment succeeded event received");
 
-      const session = await stripeInstance.checkout.sessions.list({
-        payment_intent: paymentIntentId,
-      });
+        const paymentIntent = event.data.object;
+        const paymentIntentId = paymentIntent.id;
 
-      const { transactionId,clerkId } = session.data[0].metadata;
-      
-      
-      const purchaseData = await transactionModel.findById(transactionId);
-      const userData = await userModel.findById(clerkId);
+        // List checkout sessions for this payment intent
+        const sessions = await stripeInstance.checkout.sessions.list({
+          payment_intent: paymentIntentId,
+        });
 
-      purchaseData.payment = true;
-      await purchaseData.save();
+        if (!sessions.data.length) {
+          console.error("No checkout sessions found for payment intent:", paymentIntentId);
+          break;
+        }
 
-      userData.creditBalance=purchaseData.credits;
-      await userData.save()
+        const { transactionId, clerkId } = sessions.data[0].metadata;
 
-      break;
+        if (!transactionId || !clerkId) {
+          console.error("Missing metadata on checkout session");
+          break;
+        }
+
+        // Update transaction and user
+        const purchaseData = await transactionModel.findById(transactionId);
+        const userData = await userModel.findById(clerkId);
+
+        if (purchaseData) {
+          purchaseData.payment = true;
+          await purchaseData.save();
+        } else {
+          console.error("Transaction not found:", transactionId);
+        }
+
+        if (userData) {
+          userData.creditBalance = purchaseData?.credits || userData.creditBalance;
+          await userData.save();
+        } else {
+          console.error("User not found:", clerkId);
+        }
+
+        break;
+      }
+      case "payment_intent.payment_failed": {
+        console.log("Payment failed event received");
+
+        const paymentIntent = event.data.object;
+        const paymentIntentId = paymentIntent.id;
+
+        const sessions = await stripeInstance.checkout.sessions.list({
+          payment_intent: paymentIntentId,
+        });
+
+        if (!sessions.data.length) {
+          console.error("No checkout sessions found for payment intent:", paymentIntentId);
+          break;
+        }
+
+        const { transactionId } = sessions.data[0].metadata;
+
+        if (!transactionId) {
+          console.error("Missing transactionId metadata on checkout session");
+          break;
+        }
+
+        const purchaseData = await transactionModel.findById(transactionId);
+
+        if (purchaseData) {
+          purchaseData.payment = false;
+          await purchaseData.save();
+        } else {
+          console.error("Transaction not found:", transactionId);
+        }
+
+        break;
+      }
+      default:
+        console.log(`Unhandled event type ${event.type}`);
     }
-    case "payment_intent.payment_failed": {
-        console.log("failed");
-        
-      const paymentIntent = event.data.object;
-      const paymentIntentId = paymentIntent.id;
 
-      const session = await stripeInstance.checkout.sessions.list({
-        payment_intent: paymentIntentId,
-      });
-
-      const { transactionId } = session.data[0].metadata;
-      const purchaseData = await transactionModel.findById(transactionId);
-      purchaseData.payment = false;
-      await purchaseData.save();
-
-      break;
-    }
-    default:
-      console.log(`Unhandled event type ${event.type}`);
+    // Acknowledge receipt of the event
+    response.status(200).json({ received: true });
+  } catch (error) {
+    console.error("Error processing webhook:", error);
+    response.status(500).send("Internal Server Error");
   }
-
-  //Return a response to acknowledge receipt of the event
-  response.json({ received: true });
 };
+
 
 export { clerkWebhooks, userCredits,purchaseCredits,stripeWebhooks }
