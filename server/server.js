@@ -13,7 +13,6 @@ const app=express()
 await connectDB()
 
 //Initialize middleware
-app.use(express.json())
 app.use(cors())
 
 //API routes
@@ -21,8 +20,8 @@ app.get("/",(req,res)=>{
     res.send("API is working") 
 })
 
-app.use("/api/user",userRouter)
-app.use('/api/image',imageRouter)
+app.use("/api/user",express.json(),userRouter)
+app.use('/api/image',express.json(),imageRouter)
 app.post("/stripe", express.raw({ type: "application/json" }), stripeWebhooks);
 
 app.listen(PORT,()=>{
