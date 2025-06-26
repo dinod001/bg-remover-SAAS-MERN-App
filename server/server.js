@@ -4,6 +4,7 @@ import cors from 'cors'
 import connectDB from './config/mongoose.js'
 import userRouter from './router/userRouter.js'
 import imageRouter from './router/imageRouter.js'
+import { stripeWebhooks } from './controllers/userController.js'
 
 
 //App config
@@ -22,6 +23,7 @@ app.get("/",(req,res)=>{
 
 app.use("/api/user",userRouter)
 app.use('/api/image',imageRouter)
+app.post("/stripe", express.raw({ type: "application/json" }), stripeWebhooks);
 
 app.listen(PORT,()=>{
     console.log(`Server is running ${PORT}`);
