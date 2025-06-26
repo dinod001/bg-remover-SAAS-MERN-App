@@ -22,10 +22,7 @@ app.get("/",(req,res)=>{
 
 app.use("/api/user",express.json(),userRouter)
 app.use('/api/image',express.json(),imageRouter)
-app.post("/stripe", express.raw({ type: "application/json" }), (req, res) => {
-  console.log("🔥 Stripe endpoint hit");
-  res.json({ ok: true });
-});
+app.post("/stripe", express.raw({ type: "application/json" }), stripeWebhooks);
 
 
 app.listen(PORT,()=>{
