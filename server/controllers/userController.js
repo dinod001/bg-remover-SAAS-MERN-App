@@ -179,6 +179,8 @@ const stripeWebhooks = async (request, response) => {
   // Handle the event
   switch (event.type) {
     case "payment_intent.succeeded": {
+        console.log("usccss");
+        
       const paymentIntent = event.data.object;
       const paymentIntentId = paymentIntent.id;
 
@@ -201,6 +203,8 @@ const stripeWebhooks = async (request, response) => {
       break;
     }
     case "payment_intent.payment_failed": {
+        console.log("failed");
+        
       const paymentIntent = event.data.object;
       const paymentIntentId = paymentIntent.id;
 
