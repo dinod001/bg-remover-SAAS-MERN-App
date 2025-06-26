@@ -141,6 +141,8 @@ const purchaseCredits = async (req, res) => {
             },
         ];
 
+        console.log(newTransaction._id.toString());
+        
         const session = await stripeInstance.checkout.sessions.create({
             success_url: `${origin}/`,
             cancel_url: `${origin}/`,
@@ -149,6 +151,7 @@ const purchaseCredits = async (req, res) => {
             metadata: {
                transactionId: newTransaction._id.toString(),  // ✅ correct
                clerkId: clerkId
+               
             },
         });
 
