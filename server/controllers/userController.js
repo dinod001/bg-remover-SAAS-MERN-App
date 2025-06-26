@@ -141,17 +141,27 @@ const purchaseCredits = async (req, res) => {
             },
         ];
         
-        const session = await stripeInstance.checkout.sessions.create({
-            success_url: `${origin}/`,
-            cancel_url: `${origin}/`,
-            line_items: line_items,
-            mode: "payment",
+       const session = await stripeInstance.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: line_items,
+        mode: 'payment',
+        success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/cancel`,
+        metadata: {
+            transactionId: newTransaction._id.toString(),
+            clerkId: userData.clerkId,
+        },
+        payment_intent_data: {            // <-- add metadata here too
             metadata: {
-               transactionId: newTransaction._id.toString(), 
-               clerkId: clerkId
-               
+            transactionId: newTransaction._id.toString(),
+            clerkId: userData.clerkId,
             },
+        },
         });
+
+
+        console.log(session.metadata);
+        
 
         res.json({ success: true, session_url: session.url });
     } catch (error) {
