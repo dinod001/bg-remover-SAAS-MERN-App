@@ -11,8 +11,8 @@ const removeBgImage = async (req, res) => {
     try {
 
         console.log();
-        
-        
+
+
         const user = await userModel.findOne({ clerkId: req.clerkId });
 
         if (!user) {

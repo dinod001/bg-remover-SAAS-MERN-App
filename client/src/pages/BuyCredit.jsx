@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 
 const BuyCredit = () => {
 
-  const {backendUrl,getToken} = useContext(AppContext)
+  const { backendUrl, getToken } = useContext(AppContext)
   const { isSignedIn } = useUser()
 
   const purchaseCredit = async (plan) => {
@@ -23,6 +23,7 @@ const BuyCredit = () => {
         { planId: plan },
         { headers: { token } }
       );
+
       if (data.success) {
         const { session_url } = data;
         window.location.replace(session_url);
@@ -52,7 +53,7 @@ const BuyCredit = () => {
             className="bg-white/70 backdrop-blur-md rounded-2xl shadow-xl p-8 w-full sm:w-[300px] md:w-[320px] hover:scale-105 transition-transform duration-500"
           >
             <img src={assets.logo_icon} alt="Logo" width={40} className="mb-4" />
-            
+
             <p className="font-semibold text-lg text-gray-800 mb-1">{item.id}</p>
             <p className="text-sm text-gray-600">{item.desc}</p>
 
@@ -61,7 +62,7 @@ const BuyCredit = () => {
               <span className="text-sm text-gray-500"> / {item.credits} credits</span>
             </div>
 
-            <button onClick={()=>purchaseCredit(item.id)} className="w-full bg-gray-900 text-white text-sm rounded-md py-2.5 mt-6 hover:bg-gray-800 transition">
+            <button onClick={() => purchaseCredit(item.id)} className="w-full bg-gray-900 text-white text-sm rounded-md py-2.5 mt-6 hover:bg-gray-800 transition">
               Purchase
             </button>
           </div>

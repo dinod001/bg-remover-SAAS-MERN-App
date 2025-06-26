@@ -4,7 +4,7 @@ import { AppContext } from '../context/AppContext'
 
 const Result = () => {
 
-  const { resultImage, image } = useContext(AppContext)
+  const { resultImage, image, removeBg } = useContext(AppContext)
 
 
   return (
@@ -28,7 +28,7 @@ const Result = () => {
               {
                 !resultImage && image && <div className='absolute right-1/2 bottom-1/2 transform translate-x-1/2 translate-y-1/2'>
                   <div className='border-4 border-violet-600 rounded-full h-12 w-12 border-t-transparent animate-spin'></div>
-              </div>
+                </div>
               }
             </div>
           </div>
@@ -38,7 +38,15 @@ const Result = () => {
 
       {/*--------Buttons---------*/}
       {resultImage && <div className='flex justify-center sm:justify-end items-center flex-wrap gap-4 mt-6'>
-        <button className='px-8 py-2.5 text-violet-600 text-sm border border-violet-600 rounded-full hover:scale-105 transition-all duration-700'>Try another image</button>
+        {/* Upload Button */}
+        <div className="flex items-center gap-2">
+          <input onChange={(e) => removeBg(e.target.files[0])} type="file" accept="image/*" id="upload2" hidden />
+          <label htmlFor="upload2"
+            className="flex items-center gap-2 px-6 py-2.5 border border-violet-600 text-black text-sm rounded-full cursor-pointer hover:scale-105 transition-all duration-300"
+          >
+            <span>Try another image</span>
+          </label>
+        </div>
         <a href={resultImage} download className='px-8 py-2.5 text-white text-sm bg-gradient-to-r from-violet-600 to-fuchsia-500 rounded-full hover:scale-105 transition-all duration-700'>Download image</a>
       </div>}
 

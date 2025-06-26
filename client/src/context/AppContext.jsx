@@ -66,7 +66,7 @@ export const AppContextProvider = ({ children }) => {
       } else {
         toast.error(data.message);
         data.creditBalance && setCredit(data.creditBalance)
-        if(data.creditBalance === 0){
+        if (data.creditBalance === 0) {
           navigate('/buy')
         }
       }

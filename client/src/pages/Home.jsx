@@ -8,11 +8,11 @@ import Uploader from '../components/Uploader'
 const Home = () => {
   return (
     <div>
-      <Header/>
-      <Steps/>
-      <BgSlider/>
-      <Testimonials/>
-      <Uploader/>
+      <Header />
+      <Steps />
+      <BgSlider />
+      <Testimonials />
+      <Uploader />
     </div>
   )
 }
