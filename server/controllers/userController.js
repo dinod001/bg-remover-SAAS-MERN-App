@@ -147,7 +147,8 @@ const purchaseCredits = async (req, res) => {
             line_items: line_items,
             mode: "payment",
             metadata: {
-                transactionId: newTransaction._id.toString(),
+               transactionId: newTransaction._id.toString(),  // ✅ correct
+               clerkId: clerkId
             },
         });
 
@@ -190,9 +191,8 @@ const stripeWebhooks = async (request, response) => {
         payment_intent: paymentIntentId,
       });
 
-      const { transactionId } = session.data[0].metadata;
-      const {clerkId}=request;
-
+      const { transactionId,clerkId } = session.data[0].metadata;
+      
       const purchaseData = await transactionModel.findById(transactionId);
       const userData = await userModel.findById(clerkId);
 
