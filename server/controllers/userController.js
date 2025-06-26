@@ -162,6 +162,8 @@ const purchaseCredits = async (req, res) => {
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const stripeWebhooks = async (request, response) => {
+    console.log("working");
+    
   const sig = request.headers["stripe-signature"];
 
   let event;
