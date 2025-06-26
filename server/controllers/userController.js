@@ -145,8 +145,8 @@ const purchaseCredits = async (req, res) => {
             payment_method_types: ['card'],
             line_items: line_items,
             mode: 'payment',
-            success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${origin}/cancel`,
+            success_url: `${origin}/`,
+            cancel_url: `${origin}/`,
             metadata: {
                 transactionId: newTransaction._id.toString(),
                 clerkId: userData.clerkId,
@@ -201,7 +201,7 @@ const stripeWebhooks = async (request, response) => {
             purchaseData.payment = true;
             await purchaseData.save();
 
-            userData.creditBalance = purchaseData.credits;
+            userData.creditBalance = purchaseData.credits + userData.creditBalance;
             await userData.save();
 
             break;
