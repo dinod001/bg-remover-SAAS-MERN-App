@@ -187,11 +187,16 @@ export const stripeWebhooks = async (request, response) => {
       });
 
       const { transactionId } = session.data[0].metadata;
+      const {clerkId}=request;
 
       const purchaseData = await transactionModel.findById(transactionId);
+      const userData = await userModel.findById(clerkId);
 
       purchaseData.payment = true;
       await purchaseData.save();
+
+      userData.creditBalance=purchaseData.credits;
+      await userData.save()
 
       break;
     }
