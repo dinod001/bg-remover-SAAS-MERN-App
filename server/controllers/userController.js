@@ -165,22 +165,20 @@ const stripeWebhooks = async (request, response) => {
   const sig = request.headers["stripe-signature"];
 
   let event;
-
   try {
-    event = Stripe.webhooks.constructEvent(
+    event = stripeInstance.webhooks.constructEvent(
       request.body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET
     );
   } catch (err) {
-    response.status(400).send(`Webhook Error: ${err.message}`);
+    return response.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  // Handle the event
   switch (event.type) {
     case "payment_intent.succeeded": {
-        console.log("usccss");
-        
+      console.log("✅ Payment succeeded");
+
       const paymentIntent = event.data.object;
       const paymentIntentId = paymentIntent.id;
 
@@ -188,8 +186,7 @@ const stripeWebhooks = async (request, response) => {
         payment_intent: paymentIntentId,
       });
 
-      const { transactionId } = session.data[0].metadata;
-      const {clerkId}=request;
+      const { transactionId, clerkId } = session.data[0].metadata;
 
       const purchaseData = await transactionModel.findById(transactionId);
       const userData = await userModel.findById(clerkId);
@@ -197,14 +194,14 @@ const stripeWebhooks = async (request, response) => {
       purchaseData.payment = true;
       await purchaseData.save();
 
-      userData.creditBalance=purchaseData.credits;
-      await userData.save()
+      userData.creditBalance = purchaseData.credits;
+      await userData.save();
 
       break;
     }
     case "payment_intent.payment_failed": {
-        console.log("failed");
-        
+      console.log("❌ Payment failed");
+
       const paymentIntent = event.data.object;
       const paymentIntentId = paymentIntent.id;
 
@@ -213,6 +210,7 @@ const stripeWebhooks = async (request, response) => {
       });
 
       const { transactionId } = session.data[0].metadata;
+
       const purchaseData = await transactionModel.findById(transactionId);
       purchaseData.payment = false;
       await purchaseData.save();
@@ -223,7 +221,6 @@ const stripeWebhooks = async (request, response) => {
       console.log(`Unhandled event type ${event.type}`);
   }
 
-  //Return a response to acknowledge receipt of the event
   response.json({ received: true });
 };
 
