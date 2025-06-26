@@ -147,7 +147,7 @@ const purchaseCredits = async (req, res) => {
             line_items: line_items,
             mode: "payment",
             metadata: {
-                transactionId: newTransaction.clerkId.toString(),
+                transactionId: newTransaction._id.toString(),
             },
         });
 
