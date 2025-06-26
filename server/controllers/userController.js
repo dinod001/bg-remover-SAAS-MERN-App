@@ -110,7 +110,7 @@ const purchaseCredits = async (req, res) => {
                 break;
         }
 
-        date=Date.now()
+        date = Date.now()
 
         //creating transaction
         const transactionData = {
@@ -140,26 +140,26 @@ const purchaseCredits = async (req, res) => {
                 quantity: 1,
             },
         ];
-        
-       const session = await stripeInstance.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: line_items,
-        mode: 'payment',
-        success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/cancel`,
-        metadata: {
-            transactionId: newTransaction._id.toString(),
-            clerkId: userData.clerkId,
-        },
-        payment_intent_data: {            
+
+        const session = await stripeInstance.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: line_items,
+            mode: 'payment',
+            success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/cancel`,
             metadata: {
-            transactionId: newTransaction._id.toString(),
-            clerkId: userData.clerkId,
+                transactionId: newTransaction._id.toString(),
+                clerkId: userData.clerkId,
             },
-        },
+            payment_intent_data: {
+                metadata: {
+                    transactionId: newTransaction._id.toString(),
+                    clerkId: userData.clerkId,
+                },
+            },
         });
         console.log(session.metadata);
-        
+
 
         res.json({ success: true, session_url: session.url });
     } catch (error) {
@@ -173,70 +173,59 @@ const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const stripeWebhooks = async (request, response) => {
     console.log("working");
-    
-  const sig = request.headers["stripe-signature"];
 
-  let event;
+    const sig = request.headers["stripe-signature"];
+    let event;
 
-  try {
-    event = Stripe.webhooks.constructEvent(
-      request.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-  } catch (err) {
-    return response.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  // Handle the event
-  switch (event.type) {
-    case "payment_intent.succeeded": {
-        console.log("usccss");
-        
-      const paymentIntent = event.data.object;
-      const paymentIntentId = paymentIntent.id;
-
-      const session = await stripeInstance.checkout.sessions.list({
-        payment_intent: paymentIntentId,
-      });
-
-      const { transactionId,clerkId } = session.data[0].metadata;
-      
-      
-      const purchaseData = await transactionModel.findById(transactionId);
-      const userData = await userModel.findById(clerkId);
-
-      purchaseData.payment = true;
-      await purchaseData.save();
-
-      userData.creditBalance=purchaseData.credits;
-      await userData.save()
-
-      break;
+    try {
+        event = Stripe.webhooks.constructEvent(
+            request.body,
+            sig,
+            process.env.STRIPE_WEBHOOK_SECRET
+        );
+    } catch (err) {
+        return response.status(400).send(`Webhook Error: ${err.message}`);
     }
-    case "payment_intent.payment_failed": {
-        console.log("failed");
-        
-      const paymentIntent = event.data.object;
-      const paymentIntentId = paymentIntent.id;
 
-      const session = await stripeInstance.checkout.sessions.list({
-        payment_intent: paymentIntentId,
-      });
+    // Handle the event
+    switch (event.type) {
+        case "payment_intent.succeeded": {
+            console.log("usccss");
 
-      const { transactionId } = session.data[0].metadata;
-      const purchaseData = await transactionModel.findById(transactionId);
-      purchaseData.payment = false;
-      await purchaseData.save();
+            const paymentIntent = event.data.object;
+            const { transactionId, clerkId } = paymentIntent.metadata;
 
-      break;
+            const purchaseData = await transactionModel.findById(transactionId);
+            const userData = await userModel.findOne({ clerkId });
+
+            purchaseData.payment = true;
+            await purchaseData.save();
+
+            userData.creditBalance = purchaseData.credits;
+            await userData.save();
+
+            break;
+        }
+
+        case "payment_intent.payment_failed": {
+            console.log("failed");
+
+            const paymentIntent = event.data.object;
+            const { transactionId } = paymentIntent.metadata;
+
+            const purchaseData = await transactionModel.findById(transactionId);
+            purchaseData.payment = false;
+            await purchaseData.save();
+
+            break;
+        }
+
+        default:
+            console.log(`Unhandled event type ${event.type}`);
     }
-    default:
-      console.log(`Unhandled event type ${event.type}`);
-  }
 
-  //Return a response to acknowledge receipt of the event
-  response.json({ received: true });
+    response.json({ received: true });
 };
 
-export { clerkWebhooks, userCredits,purchaseCredits,stripeWebhooks }
+
+export { clerkWebhooks, userCredits, purchaseCredits, stripeWebhooks }
